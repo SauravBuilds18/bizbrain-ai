@@ -27,21 +27,14 @@ const menuItems = [
     icon: FileText,
     path: "/invoices",
   },
-  {
-    title: "Customers",
-    icon: Users,
-    path: "/customers",
-  },
+  
   {
     title: "AI Assistant",
     icon: Bot,
     path: "/ai",
   },
-  {
-    title: "Analytics",
-    icon: BarChart3,
-    path: "/analytics",
-  },
+  
+    
   {
   title: "Timeline",
   icon: History,

@@ -104,7 +104,7 @@ export function downloadInvoicePDF(invoice) {
   doc.setFontSize(12);
 
   doc.text(
-    `Subtotal : ₹${invoice.subtotal}`,
+    `Subtotal : ₹${invoice.subtotal.toFixed(2)}`,
     14,
     y
   );
@@ -112,20 +112,44 @@ export function downloadInvoicePDF(invoice) {
   y += 8;
 
   doc.text(
-    `GST : ₹${invoice.gst}`,
-    14,
-    y
-  );
+  `Discount (${invoice.discountPercent || 0}%): -₹${invoice.discount.toFixed(2)}`,
+  14,
+  y
+);
 
-  y += 8;
+y += 8;
 
-  doc.text(
-    `Discount : ₹${invoice.discount}`,
-    14,
-    y
-  );
+doc.text(
+  `Taxable Amount : ₹${invoice.taxableAmount.toFixed(2)}`,
+  14,
+  y
+);
 
-  y += 8;
+y += 8;
+
+doc.text(
+  `CGST (${invoice.cgstPercent || 0}%): ₹${invoice.cgst.toFixed(2)}`,
+  14,
+  y
+);
+
+y += 8;
+
+doc.text(
+  `SGST (${invoice.sgstPercent || 0}%): ₹${invoice.sgst.toFixed(2)}`,
+  14,
+  y
+);
+
+y += 8;
+
+doc.text(
+  `Total GST : ₹${invoice.gst.toFixed(2)}`,
+  14,
+  y
+);
+
+y += 8;
 
   doc.setTextColor(34, 197, 94);
 
@@ -158,7 +182,7 @@ export function downloadInvoicePDF(invoice) {
   doc.setTextColor(255);
 
   doc.text(
-    `Grand Total : ₹${invoice.grandTotal}`,
+    `Grand Total : ₹${invoice.grandTotal.toFixed(2)}`,
     16,
     y + 2
   );

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:8000/api/ask-ai";
+const API = "https://bizbrain-backend-9j48.onrender.com/api/ask-ai";
 
 export async function askBusinessAI(question, businessData) {
   const res = await axios.post(

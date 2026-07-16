@@ -1,10 +1,17 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export function downloadInvoicePDF(
-  invoice,
-  businessProfile
-) {
+export function downloadInvoicePDF(invoice, businessProfile) {
+
+  const user = JSON.parse(localStorage.getItem("bizbrain_user"));
+
+  const settingsKey = user
+    ? `bizbrain_settings_${user.email}`
+    : "bizbrain_settings_guest";
+
+  businessProfile =
+    JSON.parse(localStorage.getItem(settingsKey)) || businessProfile;
+
   const doc = new jsPDF();
 
   // ===========================
@@ -14,7 +21,7 @@ export function downloadInvoicePDF(
   doc.setFontSize(40);
   doc.setTextColor(245);
 
-  doc.text("BizBrain AI", 40, 170, {
+  doc.text(businessProfile.companyName, 40, 170, {
     angle: 45,
   });
 
@@ -61,7 +68,7 @@ doc.setTextColor(r,g,b);
 
   doc.text(`Email : ${businessProfile.email}`, 44, 44);
 
-  doc.text(`GST : ${businessProfile.gst}`, 44, 52);
+  doc.text(`GST : ${businessProfile.gstNumber}`, 44, 52);
 
   // Divider
   doc.setDrawColor(180);
@@ -110,9 +117,9 @@ doc.setTextColor(r,g,b);
     body: invoice.items.map((item) => [
       item.name,
       item.quantity,
-      `${businessProfile.currency}${item.costPrice}`,
-      `${businessProfile.currency}${item.sellingPrice}`,
-`${businessProfile.currency}${item.total}`,
+      `${businessProfile.currency}${Number(item.costPrice).toFixed(2)}`,
+      `${businessProfile.currency}${Number(item.sellingPrice).toFixed(2)}`,
+`${businessProfile.currency}${Number(item.total).toFixed(2)}`,
     ]),
 
     headStyles: {
@@ -185,7 +192,7 @@ y += 8;
   doc.setTextColor(34, 197, 94);
 
   doc.text(
-    `Profit : ${businessProfile.currency}${invoice.totalProfit}`,
+    `Profit : ${businessProfile.currency}${invoice.totalProfit.toFixed(2)}`,
     14,
     y
   );

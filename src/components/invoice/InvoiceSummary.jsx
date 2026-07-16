@@ -55,14 +55,15 @@ const { businessProfile } = useBusinessProfile();
   // ==========================
   // Generate Invoice
   // ==========================
-if (
+
+  const generateInvoice = () => {
+    if (
   customer.name.trim() === "" ||
   customer.phone.trim() === ""
 ) {
   alert("Please enter customer details.");
   return;
 }
-  const generateInvoice = () => {
     if (invoiceItems.length === 0) {
       alert("Please add products.");
       return;

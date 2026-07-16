@@ -1,18 +1,18 @@
-const companyInfo = {
-  companyName: "BizBrain AI",
+const businessProfile = {
+  companyName: businessProfile.companyName,
 
   ownerName: "Aakash",
 
   address:
-    "greater noida, UttarPardesh",
+    businessProfile.address,
 
-  phone: "+91 9876543210",
+  phone: businessProfile.phone,
 
-  email: "support@bizbrainai.com",
+  email: businessProfile.email,
 
-  website: "www.bizbrainai.com",
+  website: businessProfile.website,
 
-  gst: "09ABCDE1234F1Z5",
+  gst: businessProfile.gstNumber,
 
   thankYou:
     "Thank you for your purchase. We look forward to serving you again!",
@@ -21,4 +21,4 @@ const companyInfo = {
     "https://bizbrain-ai.vercel.app",
 };
 
-export default companyInfo;
+export default businessProfile;

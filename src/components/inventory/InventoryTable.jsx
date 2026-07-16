@@ -113,8 +113,15 @@ export default function InventoryTable({
 
             {products.map((item) => {
 
-              const lowStock =
-                item.quantity <= (item.reorderLevel || 10);
+              const noStock = item.quantity === 0;
+
+const lowStock =
+  item.quantity > 0 &&
+  item.quantity < (item.reorderLevel || 10);
+
+const inStock =
+  item.quantity >= (item.reorderLevel || 10);
+
 
               return (
 
@@ -219,13 +226,23 @@ export default function InventoryTable({
 
                   {/* Status */}
 
-                  <td className="px-6 py-5 text-center">
+                 <td className="px-6 py-5 text-center">
 
-  {lowStock ? (
+  {noStock ? (
 
-    <span className="inline-flex items-center gap-2 bg-red-500/15 text-red-400 px-4 py-2 rounded-full font-medium">
+    <span className="inline-flex items-center gap-2 bg-red-600/20 text-red-400 px-4 py-2 rounded-full font-medium">
 
-      <span className="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+      <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+
+      No Stock
+
+    </span>
+
+  ) : lowStock ? (
+
+    <span className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full font-medium">
+
+      <span className="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
 
       Low Stock
 

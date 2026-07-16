@@ -5,6 +5,7 @@ import { downloadInvoicePDF } from "../../utils/pdfGenerator";
 import { useBusinessProfile } from "../../context/BusinessProfileContext";
 export default function InvoiceSummary({
   customer,
+  setCustomer,
   invoiceItems,
   setInvoiceItems,
 }) {
@@ -54,7 +55,13 @@ const { businessProfile } = useBusinessProfile();
   // ==========================
   // Generate Invoice
   // ==========================
-
+if (
+  customer.name.trim() === "" ||
+  customer.phone.trim() === ""
+) {
+  alert("Please enter customer details.");
+  return;
+}
   const generateInvoice = () => {
     if (invoiceItems.length === 0) {
       alert("Please add products.");
@@ -69,24 +76,16 @@ const { businessProfile } = useBusinessProfile();
       time: new Date().toLocaleTimeString(),
       items: invoiceItems,
 
-      subtotal,
+      subtotal: Number(subtotal.toFixed(2)),
+discount: Number(discount.toFixed(2)),
+taxableAmount: Number(taxableAmount.toFixed(2)),
+cgst: Number(cgst.toFixed(2)),
+sgst: Number(sgst.toFixed(2)),
+gst: Number(gst.toFixed(2)),
+grandTotal: Number(grandTotal.toFixed(2)),
+totalProfit: Number(totalProfit.toFixed(2)),
 
-      discountPercent,
-      discount,
-
-      taxableAmount,
-
-      cgstPercent,
-      cgst,
-
-      sgstPercent,
-      sgst,
-
-      gst,
-
-      grandTotal,
-
-      totalProfit,
+    
     };
 
     addInvoice(invoice);
@@ -98,7 +97,15 @@ const { businessProfile } = useBusinessProfile();
 
     alert("Invoice Generated Successfully!");
 
-    setInvoiceItems([]);
+setInvoiceItems([]);
+setCustomer({
+  name: "",
+  phone: "",
+  paymentMode: "Cash",
+});
+setDiscountPercent(0);
+setCgstPercent(9);
+setSgstPercent(9);
   };
 
   return (

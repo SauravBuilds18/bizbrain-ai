@@ -113,11 +113,12 @@ const { businessProfile } = useBusinessProfile();
 
             <div>
 
-              <InvoiceSummary
-                customer={customer}
-                invoiceItems={invoiceItems}
-                setInvoiceItems={setInvoiceItems}
-              />
+             <InvoiceSummary
+  customer={customer}
+  setCustomer={setCustomer}
+  invoiceItems={invoiceItems}
+  setInvoiceItems={setInvoiceItems}
+/>
 
             </div>
 
@@ -235,7 +236,7 @@ const { businessProfile } = useBusinessProfile();
 
                         <td className="px-4 py-4 font-bold text-green-400">
 
-                          ₹{invoice.grandTotal}
+                          ₹{Number(invoice.grandTotal).toFixed(2)}
 
                         </td>
 

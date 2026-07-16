@@ -32,17 +32,24 @@ export default function InvoiceForm({
       return;
     }
 
-    if (quantity <= 0) {
-      alert("Invalid quantity.");
-      return;
-    }
+  if (Number(sellingPrice) < selectedProduct.costPrice) {
+    alert(
+      `Selling price cannot be lower than the cost price (₹${selectedProduct.costPrice}).`
+    );
+    return;
+  }
 
-    if (quantity > selectedProduct.quantity) {
-      alert(
-        `Only ${selectedProduct.quantity} items available in stock.`
-      );
-      return;
-    }
+  if (quantity <= 0) {
+    alert("Invalid quantity.");
+    return;
+  }
+
+  if (quantity > selectedProduct.quantity) {
+    alert(
+      `Only ${selectedProduct.quantity} items available in stock.`
+    );
+    return;
+  }
 
     const item = {
       productId: selectedProduct.id,

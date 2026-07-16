@@ -34,9 +34,15 @@ export function InvoiceProvider({ children }) {
 
   const invoiceWithDate = {
     ...invoice,
-    createdAt: new Date().toISOString(),
-    date: new Date().toLocaleDateString("en-IN"),
-    time: new Date().toLocaleTimeString("en-IN"),
+
+subtotal: Number(invoice.subtotal.toFixed(2)),
+discount: Number(invoice.discount.toFixed(2)),
+taxableAmount: Number(invoice.taxableAmount.toFixed(2)),
+cgst: Number(invoice.cgst.toFixed(2)),
+sgst: Number(invoice.sgst.toFixed(2)),
+gst: Number(invoice.gst.toFixed(2)),
+grandTotal: Number(invoice.grandTotal.toFixed(2)),
+totalProfit: Number(invoice.totalProfit.toFixed(2)),
   };
 
   setInvoices((prev) => [invoiceWithDate, ...prev]);
@@ -57,8 +63,8 @@ export function InvoiceProvider({ children }) {
     id: Date.now(),
     type: "invoice",
     title: "Invoice Generated",
-    description: `Invoice ${invoiceWithDate.invoiceNo} created for ${invoiceWithDate.customerName}`,
-    amount: invoice.grandTotal,
+    description: `Invoice ${invoiceWithDate.invoiceNo} created for ${invoiceWithDate.customer.name}`,
+    amount: Number(invoice.grandTotal.toFixed(2)),
     date: new Date().toISOString(),
     time: new Date().toLocaleTimeString(),
   });

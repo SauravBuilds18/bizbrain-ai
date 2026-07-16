@@ -1,6 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function ProductForm({ addProduct }) {
+export default function ProductForm({
+  addProduct,
+  updateProduct,
+  editingProduct,
+  isEditing,
+  setIsEditing,
+  setEditingProduct,
+})  {
   const [product, setProduct] = useState({
     name: "",
     category: "Medicine",
@@ -12,52 +19,77 @@ export default function ProductForm({ addProduct }) {
     warrantyMonths: "",
     notes: "",
   });
+useEffect(() => {
+  if (editingProduct) {
+    setProduct({
+      ...editingProduct,
+      quantity: editingProduct.quantity || "",
+      costPrice: editingProduct.costPrice || "",
+      supplier: editingProduct.supplier || "",
+      reorderLevel: editingProduct.reorderLevel || "",
+      expiryDate: editingProduct.expiryDate || "",
+      warrantyMonths: editingProduct.warrantyMonths || "",
+      notes: editingProduct.notes || "",
+    });
+  }
+}, [editingProduct]);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (
-      !product.name ||
-      !product.category ||
-      !product.quantity ||
-      !product.costPrice
-    ) {
-      alert("Please fill all required fields.");
-      return;
-    }
+  if (
+    !product.name ||
+    !product.category ||
+    !product.quantity ||
+    !product.costPrice
+  ) {
+    alert("Please fill all required fields.");
+    return;
+  }
 
-    addProduct({
-      id: Date.now(),
-      name: product.name,
-      category: product.category,
-      quantity: Number(product.quantity),
-      costPrice: Number(product.costPrice),
-      supplier: product.supplier,
-      reorderLevel: Number(product.reorderLevel || 10),
-      expiryDate: product.expiryDate,
-      warrantyMonths: Number(product.warrantyMonths || 0),
-      notes: product.notes,
-    });
-
-    setProduct({
-      name: "",
-      category: "Medicine",
-      quantity: "",
-      costPrice: "",
-      supplier: "",
-      reorderLevel: "",
-      expiryDate: "",
-      warrantyMonths: "",
-      notes: "",
-    });
+  const finalProduct = {
+    ...product,
+    quantity: Number(product.quantity),
+    costPrice: Number(product.costPrice),
+    reorderLevel: Number(product.reorderLevel || 10),
+    warrantyMonths: Number(product.warrantyMonths || 0),
   };
+
+  if (isEditing) {
+    updateProduct(finalProduct);
+
+    setIsEditing(false);
+    setEditingProduct(null);
+
+    alert("✅ Product Updated Successfully");
+  } else {
+    addProduct({
+      ...finalProduct,
+      id: Date.now(),
+    });
+
+    alert("✅ Product Added Successfully");
+  }
+
+  setProduct({
+    name: "",
+    category: "Medicine",
+    quantity: "",
+    costPrice: "",
+    supplier: "",
+    reorderLevel: "",
+    expiryDate: "",
+    warrantyMonths: "",
+    notes: "",
+  });
+};
 
   return (
     <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 mb-8">
 
       <h2 className="text-2xl font-bold mb-6">
-        Add New Product
-      </h2>
+  {isEditing ? "✏️ Edit Product" : "➕ Add New Product"}
+</h2>
 
       <form
         onSubmit={handleSubmit}
@@ -280,7 +312,7 @@ export default function ProductForm({ addProduct }) {
           type="submit"
           className="md:col-span-3 bg-blue-600 hover:bg-blue-700 rounded-xl py-3 font-semibold transition"
         >
-          + Add Product
+          {isEditing ? "💾 Save Changes" : "+ Add Product"}
         </button>
 
       </form>

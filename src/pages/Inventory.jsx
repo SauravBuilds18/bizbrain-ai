@@ -14,11 +14,13 @@ export default function Inventory() {
   products,
   addProduct,
   deleteProduct,
+  updateProduct,
 } = useInventory();
 
  const [search, setSearch] = useState("");
 const [category, setCategory] = useState("All");
-
+const [editingProduct, setEditingProduct] = useState(null);
+const [isEditing, setIsEditing] = useState(false);
   const filtered = products.filter((item) => {
 
   const matchesSearch =
@@ -87,7 +89,14 @@ const [category, setCategory] = useState("All");
 
 <InventoryStats products={products} />
 
-          <ProductForm addProduct={addProduct} />
+          <ProductForm
+    addProduct={addProduct}
+    updateProduct={updateProduct}
+    editingProduct={editingProduct}
+    isEditing={isEditing}
+    setIsEditing={setIsEditing}
+    setEditingProduct={setEditingProduct}
+/>
 
 <SearchBar
   search={search}
@@ -98,6 +107,8 @@ const [category, setCategory] = useState("All");
           <InventoryTable
     products={filtered}
     deleteProduct={deleteProduct}
+    setEditingProduct={setEditingProduct}
+    setIsEditing={setIsEditing}
 />
 <InventoryInsights products={products} />
         </div>

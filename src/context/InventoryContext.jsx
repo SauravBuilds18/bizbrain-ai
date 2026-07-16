@@ -19,7 +19,7 @@ export function InventoryProvider({ children }) {
   const [products, setProducts] = useState(() => {
     const saved = localStorage.getItem(inventoryKey);
 
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : inventoryData;
   });
 
   // Save inventory

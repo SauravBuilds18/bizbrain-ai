@@ -14,16 +14,33 @@ export default function EditProductModal({
   if (!product) return null;
 
   const handleUpdate = () => {
-    updateProduct({
-      ...form,
-      quantity: Number(form.quantity),
-      costPrice: Number(form.costPrice),
-      reorderLevel: Number(form.reorderLevel),
-      warrantyMonths: Number(form.warrantyMonths || 0),
-    });
+  if (
+    !form.name ||
+    !form.category ||
+    form.quantity === "" ||
+    form.costPrice === ""
+  ) {
+    alert("Please fill all required fields.");
+    return;
+  }
 
-    onClose();
-  };
+  const updatedProduct = {
+  ...form,
+  quantity: Number(form.quantity),
+  costPrice: Number(form.costPrice),
+  reorderLevel: Number(form.reorderLevel || 10),
+  warrantyMonths: Number(form.warrantyMonths || 0),
+};
+
+if (["Medicine", "Grocery", "Personal Care"].includes(updatedProduct.category)) {
+  updatedProduct.warrantyMonths = 0;
+} else {
+  updatedProduct.expiryDate = "";
+}
+
+updateProduct(updatedProduct);
+onClose();
+};
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
@@ -81,22 +98,22 @@ export default function EditProductModal({
               </label>
 
               <select
-                className="w-full bg-slate-800 rounded-xl p-3 border border-slate-700 focus:border-blue-500 outline-none"
-                value={form.category}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    category: e.target.value,
-                  })
-                }
-              >
-                <option>Medicine</option>
-                <option>Electronics</option>
-                <option>Grocery</option>
-                <option>Personal Care</option>
-                <option>Stationery</option>
-                <option>Other</option>
-              </select>
+  className="w-full bg-slate-800 rounded-xl p-3 border border-slate-700 focus:border-blue-500 outline-none"
+  value={form.category}
+  onChange={(e) =>
+  setForm({
+    ...form,
+    category: e.target.value,
+  })
+}
+>
+  <option>Medicine</option>
+  <option>Electronics</option>
+  <option>Grocery</option>
+  <option>Personal Care</option>
+  <option>Stationery</option>
+  <option>Other</option>
+</select>
 
             </div>
 
@@ -189,7 +206,7 @@ export default function EditProductModal({
 
             {/* Dynamic Expiry / Warranty */}
 
-            {form.category === "Medicine" ? (
+            {["Medicine", "Grocery", "Personal Care"].includes(form.category) ? (
 
               <div className="md:col-span-2">
 
@@ -198,16 +215,17 @@ export default function EditProductModal({
                 </label>
 
                 <input
-                  type="date"
-                  className="w-full bg-slate-800 rounded-xl p-3 border border-slate-700 focus:border-blue-500 outline-none"
-                  value={form.expiryDate || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      expiryDate: e.target.value,
-                    })
-                  }
-                />
+  type="date"
+  className="w-full bg-slate-800 rounded-xl p-3 border border-slate-700 focus:border-blue-500 outline-none"
+  value={form.expiryDate || ""}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      expiryDate: e.target.value,
+      warrantyMonths: "",
+    })
+  }
+/>
 
               </div>
 
@@ -220,17 +238,18 @@ export default function EditProductModal({
                 </label>
 
                 <input
-                  type="number"
-                  placeholder="12"
-                  className="w-full bg-slate-800 rounded-xl p-3 border border-slate-700 focus:border-blue-500 outline-none"
-                  value={form.warrantyMonths || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      warrantyMonths: e.target.value,
-                    })
-                  }
-                />
+  type="number"
+  placeholder="12"
+  className="w-full bg-slate-800 rounded-xl p-3 border border-slate-700 focus:border-blue-500 outline-none"
+  value={form.warrantyMonths || ""}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      warrantyMonths: e.target.value,
+      expiryDate: "",
+    })
+  }
+/>
 
               </div>
 
@@ -275,7 +294,7 @@ export default function EditProductModal({
               onClick={handleUpdate}
               className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium"
             >
-              💾 Update Product
+              ✅ Save Changes
             </button>
 
           </div>

@@ -25,7 +25,7 @@ export default function HealthScore({ products }) {
     <div className="bg-slate-900 rounded-2xl p-6 mt-8 border border-slate-800">
 
       <h2 className="text-2xl font-bold mb-8">
-        💚 Business Health
+        💚 Inventory Health
       </h2>
 
       <div className="flex flex-col items-center">
@@ -71,7 +71,7 @@ export default function HealthScore({ products }) {
           </div>
 
           <div className="flex justify-between">
-            <span>🟢 Business Status</span>
+            <span>🟢 Inventory Status</span>
             <span className={color}>
               {status}
             </span>

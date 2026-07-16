@@ -43,15 +43,47 @@ export default function SalesChart({ data }) {
             <YAxis
               stroke="#94A3B8"
             />
+<Tooltip
+  content={({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
 
-            <Tooltip
-              formatter={(value) => [`₹${value}`, "Revenue"]}
-              contentStyle={{
-                backgroundColor: "#0F172A",
-                border: "1px solid #334155",
-                borderRadius: "10px",
-              }}
-            />
+      return (
+        <div
+          style={{
+            background: "#0F172A",
+            border: "1px solid #334155",
+            borderRadius: "10px",
+            padding: "12px",
+            color: "white",
+          }}
+        >
+          <p style={{ fontWeight: "bold", marginBottom: "8px" }}>
+            📦 {data.name}
+          </p>
+
+          <p style={{ color: "#22C55E" }}>
+            💰 Revenue: ₹{data.sales}
+          </p>
+
+          <p style={{ marginTop: "6px" }}>
+            📅 {new Date(data.date).toLocaleDateString("en-IN")}
+          </p>
+
+          <p>
+            🕒 {new Date(data.date).toLocaleTimeString("en-IN", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: true,
+})}
+          </p>
+        </div>
+      );
+    }
+
+    return null;
+  }}
+/>
 
             <Line
               type="monotone"

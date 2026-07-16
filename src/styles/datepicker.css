@@ -1,0 +1,28 @@
+.react-datepicker {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: white;
+}
+
+.react-datepicker__header {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker__day {
+  color: white;
+}
+
+.react-datepicker__day:hover {
+  background: #2563eb;
+}
+
+.react-datepicker__day--selected {
+  background: #2563eb;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: white;
+}

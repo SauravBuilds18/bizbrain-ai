@@ -9,7 +9,7 @@ import InvoiceSummary from "../components/invoice/InvoiceSummary";
 import { useInvoices } from "../context/InvoiceContext";
 import { useInventory } from "../context/InventoryContext";
 import InvoiceViewModal from "../components/invoice/InvoiceViewModal";
-
+import { useBusinessProfile } from "../context/BusinessProfileContext";
 import {
   Trash2,
   Eye,
@@ -30,7 +30,7 @@ export default function Invoices() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const { invoices, deleteInvoice } = useInvoices();
-
+const { businessProfile } = useBusinessProfile();
   const { restockProduct } = useInventory();
 
   const handleDeleteInvoice = (invoice) => {
@@ -260,8 +260,11 @@ export default function Invoices() {
 
                             <button
                               onClick={() =>
-                                downloadInvoicePDF(invoice)
-                              }
+  downloadInvoicePDF(
+    invoice,
+    businessProfile
+  )
+}
                               className="bg-green-600 hover:bg-green-700 p-2 rounded-lg"
                             >
 

@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { useBusiness } from "../../context/BusinessContext";
 import { downloadInvoicePDF } from "../../utils/pdfGenerator";
-
+  import { useInvoices } from "../../context/InvoiceContext";
+import { useBusinessProfile } from "../../context/BusinessProfileContext";
 export default function InvoiceSummary({
   customer,
   invoiceItems,
   setInvoiceItems,
 }) {
-  const { createInvoice } = useBusiness();
+
+
+const { addInvoice } = useInvoices();
+const { businessProfile } = useBusinessProfile();
 
   const [discountPercent, setDiscountPercent] = useState(0);
   const [cgstPercent, setCgstPercent] = useState(9);
@@ -85,9 +89,12 @@ export default function InvoiceSummary({
       totalProfit,
     };
 
-    createInvoice(invoice);
+    addInvoice(invoice);
 
-    downloadInvoicePDF(invoice);
+  downloadInvoicePDF(
+    invoice,
+    businessProfile
+);
 
     alert("Invoice Generated Successfully!");
 

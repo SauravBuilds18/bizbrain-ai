@@ -32,7 +32,14 @@ export function InvoiceProvider({ children }) {
   // Add Invoice
  const addInvoice = (invoice) => {
 
-  setInvoices((prev) => [invoice, ...prev]);
+  const invoiceWithDate = {
+    ...invoice,
+    createdAt: new Date().toISOString(),
+    date: new Date().toLocaleDateString("en-IN"),
+    time: new Date().toLocaleTimeString("en-IN"),
+  };
+
+  setInvoices((prev) => [invoiceWithDate, ...prev]);
 
   const user = JSON.parse(
     localStorage.getItem("bizbrain_user")
@@ -50,7 +57,7 @@ export function InvoiceProvider({ children }) {
     id: Date.now(),
     type: "invoice",
     title: "Invoice Generated",
-    description: `Invoice ${invoice.invoiceNo} created for ${invoice.customerName}`,
+    description: `Invoice ${invoiceWithDate.invoiceNo} created for ${invoiceWithDate.customerName}`,
     amount: invoice.grandTotal,
     date: new Date().toISOString(),
     time: new Date().toLocaleTimeString(),

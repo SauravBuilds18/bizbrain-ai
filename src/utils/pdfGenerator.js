@@ -1,8 +1,10 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import companyInfo from "../config/companyInfo";
 
-export function downloadInvoicePDF(invoice) {
+export function downloadInvoicePDF(
+  invoice,
+  businessProfile
+) {
   const doc = new jsPDF();
 
   // ===========================
@@ -19,22 +21,47 @@ export function downloadInvoicePDF(invoice) {
   // ===========================
   // Company Header
   // ===========================
+// ===========================
+// Company Logo
+// ===========================
 
+if (businessProfile.logo) {
+  try {
+    doc.addImage(
+      businessProfile.logo,
+      "PNG",
+      14,
+      10,
+      24,
+      24
+    );
+  } catch (error) {
+    console.log("Logo not loaded", error);
+  }
+}
   doc.setFontSize(24);
-  doc.setTextColor(37, 99, 235);
+  const color = businessProfile.primaryColor;
 
-  doc.text(companyInfo.companyName, 14, 18);
+const r = parseInt(color.slice(1,3),16);
+
+const g = parseInt(color.slice(3,5),16);
+
+const b = parseInt(color.slice(5,7),16);
+
+doc.setTextColor(r,g,b);
+
+  doc.text(businessProfile.companyName, 44, 18);
 
   doc.setFontSize(11);
   doc.setTextColor(90);
 
-  doc.text(companyInfo.address, 14, 28);
+  doc.text(businessProfile.address, 44, 28);
 
-  doc.text(`Phone : ${companyInfo.phone}`, 14, 36);
+  doc.text(`Phone : ${businessProfile.phone}`, 44, 36);
 
-  doc.text(`Email : ${companyInfo.email}`, 14, 44);
+  doc.text(`Email : ${businessProfile.email}`, 44, 44);
 
-  doc.text(`GST : ${companyInfo.gst}`, 14, 52);
+  doc.text(`GST : ${businessProfile.gst}`, 44, 52);
 
   // Divider
   doc.setDrawColor(180);
@@ -47,7 +74,11 @@ export function downloadInvoicePDF(invoice) {
   doc.setFontSize(11);
   doc.setTextColor(50);
 
-  doc.text(`Invoice No : ${invoice.invoiceNo}`, 135, 20);
+  doc.text(
+  `Invoice No : ${businessProfile.invoicePrefix}-${invoice.invoiceNo}`,
+  135,
+  20
+);
 
   doc.text(`Date : ${invoice.date}`, 135, 28);
 
@@ -79,9 +110,9 @@ export function downloadInvoicePDF(invoice) {
     body: invoice.items.map((item) => [
       item.name,
       item.quantity,
-      `₹${item.costPrice}`,
-      `₹${item.sellingPrice}`,
-      `₹${item.total}`,
+      `${businessProfile.currency}${item.costPrice}`,
+      `${businessProfile.currency}${item.sellingPrice}`,
+`${businessProfile.currency}${item.total}`,
     ]),
 
     headStyles: {
@@ -104,7 +135,7 @@ export function downloadInvoicePDF(invoice) {
   doc.setFontSize(12);
 
   doc.text(
-    `Subtotal : ₹${invoice.subtotal.toFixed(2)}`,
+    `Subtotal : ${businessProfile.currency}${invoice.subtotal.toFixed(2)}`,
     14,
     y
   );
@@ -112,7 +143,7 @@ export function downloadInvoicePDF(invoice) {
   y += 8;
 
   doc.text(
-  `Discount (${invoice.discountPercent || 0}%): -₹${invoice.discount.toFixed(2)}`,
+  `Discount (${invoice.discountPercent || 0}%): -${businessProfile.currency}${invoice.discount.toFixed(2)}`,
   14,
   y
 );
@@ -120,7 +151,7 @@ export function downloadInvoicePDF(invoice) {
 y += 8;
 
 doc.text(
-  `Taxable Amount : ₹${invoice.taxableAmount.toFixed(2)}`,
+  `Taxable Amount : ${businessProfile.currency}${invoice.taxableAmount.toFixed(2)}`,
   14,
   y
 );
@@ -128,7 +159,7 @@ doc.text(
 y += 8;
 
 doc.text(
-  `CGST (${invoice.cgstPercent || 0}%): ₹${invoice.cgst.toFixed(2)}`,
+  `CGST (${invoice.cgstPercent || 0}%): ${businessProfile.currency}${invoice.cgst.toFixed(2)}`,
   14,
   y
 );
@@ -136,7 +167,7 @@ doc.text(
 y += 8;
 
 doc.text(
-  `SGST (${invoice.sgstPercent || 0}%): ₹${invoice.sgst.toFixed(2)}`,
+  `SGST (${invoice.sgstPercent || 0}%): ${businessProfile.currency}${invoice.sgst.toFixed(2)}`,
   14,
   y
 );
@@ -144,7 +175,7 @@ doc.text(
 y += 8;
 
 doc.text(
-  `Total GST : ₹${invoice.gst.toFixed(2)}`,
+  `Total GST : ${businessProfile.currency}${invoice.gst.toFixed(2)}`,
   14,
   y
 );
@@ -154,7 +185,7 @@ y += 8;
   doc.setTextColor(34, 197, 94);
 
   doc.text(
-    `Profit : ₹${invoice.totalProfit}`,
+    `Profit : ${businessProfile.currency}${invoice.totalProfit}`,
     14,
     y
   );
@@ -182,7 +213,7 @@ y += 8;
   doc.setTextColor(255);
 
   doc.text(
-    `Grand Total : ₹${invoice.grandTotal.toFixed(2)}`,
+    `Grand Total : ${businessProfile.currency}${invoice.grandTotal.toFixed(2)}`,
     16,
     y + 2
   );
@@ -191,37 +222,95 @@ y += 8;
   // Footer
   // ===========================
 
-  y += 25;
+  // ===========================
+// Professional Footer
+// ===========================
 
-  doc.setTextColor(34, 197, 94);
+y += 20;
 
-  doc.setFontSize(13);
+// Divider
+doc.setDrawColor(180);
+doc.line(14, y, 195, y);
 
-  doc.text(
-    companyInfo.thankYou,
-    14,
-    y
-  );
+y += 10;
 
-  y += 10;
+// Terms & Conditions
+doc.setFontSize(11);
+doc.setTextColor(40);
 
-  doc.setFontSize(10);
+doc.setFont(undefined, "bold");
+doc.text("Terms & Conditions", 14, y);
 
-  doc.setTextColor(120);
+doc.setFont(undefined, "normal");
 
-  doc.text(
-    "Generated using BizBrain AI - Smart Business Operating System",
-    14,
-    y
-  );
+y += 7;
 
-  y += 8;
+const terms =
+  businessProfile.terms ||
+  "Goods once sold will not be returned.";
 
-  doc.text(
-    `Website : ${companyInfo.website}`,
-    14,
-    y
-  );
+doc.text(terms, 14, y, {
+  maxWidth: 180,
+});
+
+y += 15;
+
+// Thank You Message
+doc.setFont(undefined, "bold");
+doc.setTextColor(34, 197, 94);
+
+doc.text(
+  businessProfile.footerMessage ||
+    "Thank you for your purchase!",
+  14,
+  y
+);
+
+doc.setFont(undefined, "normal");
+
+y += 10;
+
+// Contact Details
+doc.setFontSize(10);
+doc.setTextColor(100);
+
+doc.text(
+  `Phone : ${businessProfile.phone}`,
+  14,
+  y
+);
+
+doc.text(
+  `Email : ${businessProfile.email}`,
+  70,
+  y
+);
+
+y += 7;
+
+doc.text(
+  `Website : ${businessProfile.website}`,
+  14,
+  y
+);
+
+doc.text(
+  `GST : ${businessProfile.gstNumber}`,
+  120,
+  y
+);
+
+y += 10;
+
+// Powered By
+doc.setFontSize(10);
+doc.setTextColor(150);
+
+doc.text(
+  "Powered by BizBrain AI",
+  14,
+  y
+);
 
   // ===========================
   // Save PDF

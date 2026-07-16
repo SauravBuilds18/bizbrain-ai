@@ -4,19 +4,23 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import "./index.css";
-
+import { BusinessProfileProvider } from "./context/BusinessProfileContext";
 import { InventoryProvider } from "./context/InventoryContext";
 import { InvoiceProvider } from "./context/InvoiceContext";
 import { BusinessProvider } from "./context/BusinessContext";
-
+import { DashboardFilterProvider } from "./context/DashboardFilterContext";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <InventoryProvider>
-      <InvoiceProvider>
-         <BusinessProvider>
-        <App />
+  <InventoryProvider>
+    <InvoiceProvider>
+      <DashboardFilterProvider>
+        <BusinessProvider>
+          <BusinessProfileProvider>
+          <App />
+          </BusinessProfileProvider>
         </BusinessProvider>
-      </InvoiceProvider>
-    </InventoryProvider>
-  </BrowserRouter>
+      </DashboardFilterProvider>
+    </InvoiceProvider>
+  </InventoryProvider>
+</BrowserRouter>
 );

@@ -1,5 +1,5 @@
 import AISummaryCard from "./AISummaryCard";
-import Copilot from "./Copilot";
+import HealthScore from "./HealthScore";
 
 export default function DashboardBottom({
   summary,
@@ -8,16 +8,18 @@ export default function DashboardBottom({
   products,
 }) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
+    <div className="grid lg:grid-cols-2 gap-6 mt-8">
 
-      <AISummaryCard
-        summary={summary}
-        loading={loading}
-        onAnalyze={onAnalyze}
-      />
+   <AISummaryCard
+      summary={summary}
+      loading={loading}
+      onAnalyze={onAnalyze}
+   />
 
-      <Copilot products={products} />
+   <HealthScore
+      products={products}
+   />
 
-    </div>
+</div>
   );
 }

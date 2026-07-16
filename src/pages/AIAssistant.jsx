@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
-import { Bot, Send } from "lucide-react";
+import ExecutiveBrief from "../components/ai/ExecutiveBrief";
+import {
+  Bot,
+  Send,
+  Mic,
+  Volume2,
+  VolumeX,
+  Languages,
+} from "lucide-react";
 
 import { askBusinessAI } from "../services/aiService";
 
@@ -15,6 +23,7 @@ export default function AIAssistant() {
   const { invoices } = useInvoices();
 
   const [question, setQuestion] = useState("");
+  
 
   const [messages, setMessages] = useState([
     {
@@ -23,8 +32,25 @@ export default function AIAssistant() {
         "👋 Welcome to BizBrain AI CEO.\n\nI can analyze your inventory, invoices, revenue, profit and give business suggestions.",
     },
   ]);
-
+const [executiveBrief, setExecutiveBrief] = useState("");
+const [briefLoading, setBriefLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState("en-US");
+const languageConfig = {
+  "en-US": {
+    speech: "en-US",
+    prompt: "Respond only in English.",
+  },
+  "hi-IN": {
+    speech: "hi-IN",
+    prompt:
+      "उत्तर केवल हिंदी में दें। सरल और पेशेवर भाषा का उपयोग करें।",
+  },
+};
+const [listening, setListening] = useState(false);
+
+const [speaking, setSpeaking] = useState(false);
+const [speakingMessage, setSpeakingMessage] = useState(null);
 
   // ------------------------
   // Dashboard Calculations
@@ -56,22 +82,73 @@ export default function AIAssistant() {
   // Analyze Whole Business
   // ------------------------
 
+
+const generateExecutiveBrief = async () => {
+
+  setBriefLoading(true);
+
+  try {
+
+    const prompt = `
+    ${languageConfig[language].prompt}
+You are an experienced business consultant.
+
+Analyze the following business and generate an Executive Business Brief.
+
+Include:
+
+1. Business Health Score (out of 100)
+2. Revenue Summary
+3. Profit Summary
+4. Low Stock Warning
+5. Top Performing Product
+6. Business Risks
+7. Growth Opportunities
+8. 3 CEO Recommendations
+
+Keep the response short, professional, and under 180 words.
+`;
+
+    const answer = await askBusinessAI(prompt, {
+      products,
+      invoices,
+    });
+
+    setExecutiveBrief(answer);
+
+  } catch (err) {
+
+    setExecutiveBrief(
+      "Unable to generate AI Executive Brief."
+    );
+
+  }
+
+  setBriefLoading(false);
+
+};
+
   const analyzeBusiness = async () => {
 
     setLoading(true);
 
     try {
 
-      const answer = await askBusinessAI(
+      const finalPrompt = `
+${languageConfig[language].prompt}
 
-        "Analyze my business completely. Explain revenue, profit, inventory health, risks, growth opportunities and recommendations.",
+Analyze my business completely.
+Explain revenue, profit, inventory health,
+risks, growth opportunities and recommendations.
+`;
 
-        {
-          products,
-          invoices,
-        }
-
-      );
+const answer = await askBusinessAI(
+  finalPrompt,
+  {
+    products,
+    invoices,
+  }
+);
 
       setMessages((prev) => [
 
@@ -83,6 +160,7 @@ export default function AIAssistant() {
         },
 
       ]);
+
 
     } catch (error) {
 
@@ -111,6 +189,107 @@ export default function AIAssistant() {
   // ------------------------
   // Ask AI
   // ------------------------
+const speakResponse = (text, index) => {
+
+  // If this message is already speaking, stop it
+
+  if (speakingMessage === index) {
+
+    window.speechSynthesis.cancel();
+
+    setSpeaking(false);
+
+    setSpeakingMessage(null);
+
+    return;
+
+  }
+
+  // Stop any previous speech
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+
+  speech.lang = languageConfig[language].speech;
+
+  speech.rate = 1;
+
+  speech.pitch = 1;
+
+  speech.onstart = () => {
+
+    setSpeaking(true);
+
+    setSpeakingMessage(index);
+
+  };
+
+  speech.onend = () => {
+
+    setSpeaking(false);
+
+    setSpeakingMessage(null);
+
+  };
+
+  window.speechSynthesis.speak(speech);
+
+};
+const startListening = () => {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Your browser doesn't support Speech Recognition.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = languageConfig[language].speech;
+
+  recognition.continuous = false;
+
+  recognition.interimResults = true;
+
+  recognition.maxAlternatives = 1;
+
+  setListening(true);
+
+  recognition.onstart = () => {
+    console.log("Listening...");
+  };
+
+  recognition.onresult = (event) => {
+
+    const transcript = Array.from(event.results)
+      .map(result => result[0].transcript)
+      .join("");
+
+    setQuestion(transcript);
+
+  };
+
+  recognition.onerror = (event) => {
+
+    console.error(event.error);
+
+    setListening(false);
+
+  };
+
+  recognition.onend = () => {
+
+    setListening(false);
+
+  };
+
+  recognition.start();
+
+};
 
   const askAI = async () => {
 
@@ -128,6 +307,7 @@ export default function AIAssistant() {
       },
 
     ]);
+   
 
     setQuestion("");
 
@@ -135,16 +315,21 @@ export default function AIAssistant() {
 
     try {
 
-      const answer = await askBusinessAI(
+      const prompt = `
+${languageConfig[language].prompt}
 
-        userQuestion,
+User Question:
 
-        {
-          products,
-          invoices,
-        }
+${userQuestion}
+`;
 
-      );
+const answer = await askBusinessAI(
+    prompt,
+    {
+        products,
+        invoices,
+    }
+);
 
       setMessages((prev) => [
 
@@ -202,16 +387,19 @@ export default function AIAssistant() {
 
     try {
 
-      const answer = await askBusinessAI(
+     const finalPrompt = `
+${languageConfig[language].prompt}
 
-        prompt,
+${prompt}
+`;
 
-        {
-          products,
-          invoices,
-        }
-
-      );
+const answer = await askBusinessAI(
+  finalPrompt,
+  {
+    products,
+    invoices,
+  }
+);
 
       setMessages((prev) => [
 
@@ -223,6 +411,7 @@ export default function AIAssistant() {
         },
 
       ]);
+      
 
     } catch (error) {
 
@@ -248,7 +437,11 @@ export default function AIAssistant() {
 
   };
 
-  
+ useEffect(() => {
+  if (products.length || invoices.length) {
+    generateExecutiveBrief();
+  }
+}, [products, invoices]);
 
   return (
     <div className="flex bg-slate-950 min-h-screen text-white">
@@ -273,90 +466,41 @@ export default function AIAssistant() {
 
       {/* CEO Dashboard */}
 
-      <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-blue-500 rounded-2xl p-8 mb-8 shadow-xl">
+      <ExecutiveBrief
+  revenue={totalRevenue}
+  profit={totalProfit}
+  orders={invoices.length}
+  lowStock={lowStock}
+  businessHealth={businessHealth}
+/>
 
-        <h2 className="text-3xl font-bold">
+<div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 mb-8">
 
-          🤖 Welcome to BizBrain AI CEO
+  <h2 className="text-2xl font-bold mb-4">
 
-        </h2>
+    🤖 AI Executive Report
 
-        <p className="mt-2 text-blue-100">
+  </h2>
 
-          Your intelligent business operating assistant.
+  {briefLoading ? (
 
-        </p>
+    <p className="text-gray-400">
 
-        <div className="grid md:grid-cols-4 gap-5 mt-8">
+      Generating AI report...
 
-          <div className="bg-black/20 rounded-xl p-5">
+    </p>
 
-            <p className="text-blue-100 text-sm">
+  ) : (
 
-              Revenue
+    <div className="whitespace-pre-wrap leading-8">
 
-            </p>
+      {executiveBrief}
 
-            <h3 className="text-3xl font-bold">
+    </div>
 
-              ₹{totalRevenue.toLocaleString()}
+  )}
 
-            </h3>
-
-          </div>
-
-          <div className="bg-black/20 rounded-xl p-5">
-
-            <p className="text-blue-100 text-sm">
-
-              Profit
-
-            </p>
-
-            <h3 className="text-3xl font-bold">
-
-              ₹{totalProfit.toLocaleString()}
-
-            </h3>
-
-          </div>
-
-          <div className="bg-black/20 rounded-xl p-5">
-
-            <p className="text-blue-100 text-sm">
-
-              Orders
-
-            </p>
-
-            <h3 className="text-3xl font-bold">
-
-              {invoices.length}
-
-            </h3>
-
-          </div>
-
-          <div className="bg-black/20 rounded-xl p-5">
-
-            <p className="text-blue-100 text-sm">
-
-              Business Health
-
-            </p>
-
-            <h3 className="text-3xl font-bold">
-
-              {businessHealth}
-
-            </h3>
-
-          </div>
-
-        </div>
-
-      </div>
-
+</div>
       {/* Analyze Button */}
 
       <button
@@ -515,19 +659,43 @@ export default function AIAssistant() {
 
           >
 
-            <div
+          <div
+  className={`inline-block px-6 py-4 rounded-2xl shadow-lg max-w-3xl whitespace-pre-wrap ${
+    msg.sender === "user"
+      ? "bg-gradient-to-r from-blue-600 to-cyan-500"
+      : "bg-slate-800 border border-slate-700"
+  }`}
+>
 
-              className={`inline-block px-5 py-3 rounded-xl max-w-3xl whitespace-pre-wrap ${
-                msg.sender === "user"
-                  ? "bg-blue-600"
-                  : "bg-slate-800"
-              }`}
+  {msg.text}
 
-            >
+  {msg.sender === "ai" && (
+<button
+  onClick={() => speakResponse(msg.text, index)}
+  className="ml-3 mt-3 flex items-center gap-2 transition"
+>
 
-              {msg.text}
+  {speakingMessage === index ? (
 
-            </div>
+    <Volume2
+      size={20}
+      className="text-green-400 animate-pulse"
+    />
+
+  ) : (
+
+    <VolumeX
+      size={20}
+      className="text-green-400"
+    />
+
+  )}
+
+</button>
+
+  )}
+
+</div>
 
           </div>
 
@@ -535,42 +703,101 @@ export default function AIAssistant() {
 
         {loading && (
 
-          <div className="text-gray-400 italic">
+          <div className="flex items-center gap-3 text-gray-300">
 
-            🤖 BizBrain AI is analyzing your business...
+  <Bot className="animate-bounce text-blue-400" />
 
-          </div>
+  <span>
+
+    BizBrain AI is thinking...
+
+  </span>
+
+</div>
 
         )}
 
       </div>
 
+
+      <div className="flex justify-between items-center mb-4">
+
+  <div className="flex items-center gap-3">
+
+    <Languages className="text-blue-400" />
+
+    <select
+      value={language}
+      onChange={(e) => setLanguage(e.target.value)}
+      className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2"
+    >
+      <option value="en-US">🇬🇧 English</option>
+      <option value="hi-IN">🇮🇳 Hindi</option>
+    </select>
+
+  </div>
+
+  {listening && (
+    <div className="text-red-400 animate-pulse font-semibold">
+      🎤 Listening...
+    </div>
+  )}
+
+  {speaking && (
+    <div className="text-green-400 animate-pulse font-semibold">
+      🔊 Speaking...
+    </div>
+  )}
+
+</div>
+
       {/* Continue with Part 3 below */}
             {/* Chat Input */}
 
-      <div className="flex gap-4 mt-6">
+      <div className="flex gap-3 mt-6">
 
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              askAI();
-            }
-          }}
-          placeholder="Ask your AI CEO anything about your business..."
-          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-5 py-4 outline-none focus:border-blue-500"
-        />
+  <input
+    type="text"
+    value={question}
+    onChange={(e) => setQuestion(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") askAI();
+    }}
+    placeholder="Ask BizBrain AI anything..."
+    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-5 py-4 outline-none focus:border-blue-500"
+  />
 
-        <button
-          onClick={askAI}
-          className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6 transition"
-        >
-          <Send size={22} />
-        </button>
+  {/* Microphone */}
 
-      </div>
+  <button
+    onClick={startListening}
+    className={`px-5 rounded-xl transition ${
+      listening
+        ? "bg-red-600 animate-pulse"
+        : "bg-green-600 hover:bg-green-700"
+    }`}
+  >
+
+    <Mic size={22} />
+
+  </button>
+
+  {/* Speaker Stop */}
+
+  
+
+  {/* Send */}
+
+  <button
+    onClick={askAI}
+    className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6"
+  >
+
+    <Send size={22} />
+
+  </button>
+
+</div>
 
     </div>
 

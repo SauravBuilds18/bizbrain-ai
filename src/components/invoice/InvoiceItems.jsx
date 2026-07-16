@@ -101,7 +101,7 @@ export default function InvoiceItems({
 
                 <td className="text-center font-semibold">
 
-                  ₹{item.total}
+                  ₹{Number(item.total).toFixed(2)}
 
                 </td>
 

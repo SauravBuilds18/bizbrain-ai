@@ -164,7 +164,7 @@ export default function InvoiceViewModal({
             <span>Grand Total</span>
 
             <span className="text-blue-400">
-              ₹{invoice.grandTotal}
+              ₹{Number(invoice.grandTotal).toFixed(2)}
             </span>
 
           </div>

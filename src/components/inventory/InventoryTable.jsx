@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Pencil,
   Trash2,
   Pill,
   Smartphone,
@@ -268,7 +267,7 @@ const inStock =
 
                     <div className="flex justify-center gap-3">
 
-  <button
+  {/* <button
     onClick={() => setSelectedProduct(item)}
     className="w-10 h-10 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 flex items-center justify-center transition"
     title="Edit Product"
@@ -279,7 +278,7 @@ const inStock =
       size={18}
     />
 
-  </button>
+  </button> */}
 
   <button
     onClick={() => deleteProduct(item.id)}

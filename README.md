@@ -417,7 +417,6 @@ BizBrain AI is designed with user privacy in mind.
 
 Below are some screenshots of BizBrain AI.
 
-> Replace the image paths with your actual screenshots before submission.
 
 ## 🏠 Landing Page
 
@@ -472,7 +471,7 @@ Below are some screenshots of BizBrain AI.
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/BizBrain-AI.git
+git clone https://github.com/SauravBuilds18/BizBrain-AI.git
 ```
 
 ---
@@ -501,9 +500,10 @@ Example:
 
 ```env
 VITE_GROQ_API_KEY=YOUR_API_KEY
+Port=8000
 ```
 
-*(Adjust this example if your backend uses a different environment variable name.)*
+
 
 ---
 

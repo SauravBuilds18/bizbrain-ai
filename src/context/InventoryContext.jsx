@@ -1,92 +1,222 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import inventoryData from "../data/inventoryData";
-
+import {
+  getInvoices,
+  createInvoice,
+} from "../services/invoiceService";
+// import inventoryData from "../data/inventoryData";
+import { supabase } from "../lib/supabase";
+import { getCurrentUser } from "../services/authService";
 const InventoryContext = createContext();
 
 export function InventoryProvider({ children }) {
-
+const [products, setProducts] = useState([]);
   // Logged-in user
-  const user = JSON.parse(
-    localStorage.getItem("bizbrain_user")
-  );
-
-  // Unique inventory key for each user
-  const inventoryKey = user
-    ? `bizbrain_inventory_${user.email}`
-    : "bizbrain_inventory_guest";
-
-  // Load inventory
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem(inventoryKey);
-
-    return saved ? JSON.parse(saved) : inventoryData;
-  });
-
-  // Save inventory
   useEffect(() => {
-    localStorage.setItem(
-      inventoryKey,
-      JSON.stringify(products)
-    );
-  }, [products, inventoryKey]);
+  fetchProducts();
+}, []);
 
+async function fetchProducts() {
+
+  const user = await getCurrentUser();
+
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from("inventory")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  setProducts(
+  (data || []).map((item) => ({
+    ...item,
+    costPrice: Number(item.cost_price),
+    reorderLevel: item.reorder_level,
+    expiryDate: item.expiry_date,
+    warrantyMonths: item.warranty_months,
+  }))
+);
+}
   // Add Product
-  const addProduct = (product) => {
-    setProducts((prev) => [product, ...prev]);
-  };
+const addProduct = async (product) => {
+
+  const user = await getCurrentUser();
+
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from("inventory")
+    .insert([
+      {
+        user_id: user.id,
+        name: product.name,
+        category: product.category,
+        quantity: product.quantity,
+        cost_price: product.costPrice,
+        supplier: product.supplier,
+        reorder_level: product.reorderLevel,
+        expiry_date: product.expiryDate || null,
+        warranty_months: product.warrantyMonths || null,
+        notes: product.notes,
+      },
+    ])
+    .select();
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  setProducts((prev) => [
+  {
+    ...data[0],
+    costPrice: Number(data[0].cost_price),
+    reorderLevel: data[0].reorder_level,
+    expiryDate: data[0].expiry_date,
+    warrantyMonths: data[0].warranty_months,
+  },
+  ...prev,
+]);
+};
 
   // Delete Product
-  const deleteProduct = (id) => {
-    setProducts((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
-  };
+ const deleteProduct = async (id) => {
+
+  const { error } = await supabase
+    .from("inventory")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  setProducts((prev) =>
+    prev.filter((item) => item.id !== id)
+  );
+};
 
   // Update Product
-  const updateProduct = (updatedProduct) => {
-    setProducts((prev) =>
-      prev.map((item) =>
-        item.id === updatedProduct.id
-          ? updatedProduct
-          : item
-      )
-    );
-  };
+  const updateProduct = async (product) => {
+
+  const { data, error } = await supabase
+    .from("inventory")
+    .update({
+      name: product.name,
+      category: product.category,
+      quantity: product.quantity,
+      cost_price: product.costPrice,
+      supplier: product.supplier,
+      reorder_level: product.reorderLevel,
+      expiry_date: product.expiryDate || null,
+      warranty_months: product.warrantyMonths || null,
+      notes: product.notes,
+    })
+    .eq("id", product.id)
+    .select();
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  setProducts((prev) =>
+    prev.map((item) =>
+      item.id === product.id
+  ? {
+      ...data[0],
+      costPrice: Number(data[0].cost_price),
+      reorderLevel: data[0].reorder_level,
+      expiryDate: data[0].expiry_date,
+      warrantyMonths: data[0].warranty_months,
+    }
+  : item
+    )
+  );
+};
 
   // Sell Product
-  const sellProduct = (productId, quantitySold) => {
-    setProducts((prev) =>
-      prev.map((item) => {
+  const sellProduct = async (productId, quantitySold) => {
 
-        if (item.id !== productId) return item;
+  const product = products.find(
+    (p) => p.id === productId
+  );
 
-        return {
-          ...item,
-          quantity: Math.max(
-            0,
-            item.quantity - quantitySold
-          ),
-        };
+  if (!product) return;
 
-      })
-    );
-  };
+  const newQuantity = Math.max(
+    0,
+    product.quantity - quantitySold
+  );
+
+  const { error } = await supabase
+    .from("inventory")
+    .update({
+      quantity: newQuantity,
+    })
+    .eq("id", productId);
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  setProducts((prev) =>
+    prev.map((item) =>
+      item.id === productId
+        ? {
+            ...item,
+            quantity: newQuantity,
+          }
+        : item
+    )
+  );
+};
 
   // Restock Product
-  const restockProduct = (productId, quantityAdded) => {
-    setProducts((prev) =>
-      prev.map((item) => {
+ const restockProduct = async (
+  productId,
+  quantityAdded
+) => {
 
-        if (item.id !== productId) return item;
+  const product = products.find(
+    (p) => p.id === productId
+  );
 
-        return {
-          ...item,
-          quantity: item.quantity + quantityAdded,
-        };
+  if (!product) return;
 
-      })
-    );
-  };
+  const newQuantity =
+    product.quantity + quantityAdded;
+
+  const { error } = await supabase
+    .from("inventory")
+    .update({
+      quantity: newQuantity,
+    })
+    .eq("id", productId);
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  setProducts((prev) =>
+    prev.map((item) =>
+      item.id === productId
+        ? {
+            ...item,
+            quantity: newQuantity,
+          }
+        : item
+    )
+  );
+};
 
   // Find Product
   const getProductById = (id) =>

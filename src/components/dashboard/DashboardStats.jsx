@@ -16,7 +16,7 @@ export default function DashboardStats({
   profitChange,
   profitTrend,
 
-  products,
+  orders,
   ordersChange,
   ordersTrend,
 
@@ -54,8 +54,9 @@ export default function DashboardStats({
       />
 
       <StatCard
-        title="Orders"
-        value={products}
+       
+  title="Orders"
+  value={orders}
         
         change={`${ordersTrend === "up" ? "▲" : "▼"} ${ordersChange}%`}
 subtitle={

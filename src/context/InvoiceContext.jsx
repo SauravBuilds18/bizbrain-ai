@@ -1,5 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-
+import {
+  getInvoices,
+  createInvoice,
+  createInvoiceItems,
+   deleteInvoiceById,
+} from "../services/invoiceService";
 const InvoiceContext = createContext();
 
 export function InvoiceProvider({ children }) {
@@ -15,11 +20,57 @@ export function InvoiceProvider({ children }) {
     : "bizbrain_invoices_guest";
 
   // Load invoices
-  const [invoices, setInvoices] = useState(() => {
-    const saved = localStorage.getItem(invoiceKey);
+ const [invoices, setInvoices] = useState([]);
 
-    return saved ? JSON.parse(saved) : [];
-  });
+useEffect(() => {
+  loadInvoices();
+}, []);
+
+async function loadInvoices() {
+  const data = await getInvoices();
+
+  const normalized = data.map((invoice) => ({
+    ...invoice,
+
+    // Keep compatibility with your existing UI
+    invoiceNo: invoice.invoice_number,
+grandTotal: Number(invoice.grand_total),
+subtotal: Number(invoice.subtotal),
+gst: Number(invoice.gst),
+totalProfit: Number(invoice.total_profit),
+discountPercent: Number(invoice.discount_percent),
+cgstPercent: Number(invoice.cgst_percent),
+sgstPercent: Number(invoice.sgst_percent),
+    customer: {
+      name: invoice.customer_name,
+      phone: invoice.customer_phone,
+      paymentMode: invoice.payment_method,
+      
+    },
+
+    date: new Date(invoice.created_at).toLocaleDateString(),
+
+    // We'll replace this with real invoice items later
+    items: (invoice.invoice_items || []).map((item) => ({
+  id: item.id,
+  productId: item.product_id,
+
+  name: item.product_name,
+
+  quantity: Number(item.quantity),
+  sellingPrice: Number(item.price),
+  profit: Number(item.profit),
+
+  total: Number(item.price) * Number(item.quantity),
+})),
+quantity: (invoice.invoice_items || []).reduce(
+  (sum, item) => sum + Number(item.quantity),
+  0
+),
+  }));
+
+  setInvoices(normalized);
+}
 
   // Save invoices
   useEffect(() => {
@@ -30,7 +81,7 @@ export function InvoiceProvider({ children }) {
   }, [invoices, invoiceKey]);
 
   // Add Invoice
- const addInvoice = (invoice) => {
+const addInvoice = async (invoice) => {
 
   const invoiceWithDate = {
     ...invoice,
@@ -44,8 +95,18 @@ gst: Number(invoice.gst.toFixed(2)),
 grandTotal: Number(invoice.grandTotal.toFixed(2)),
 totalProfit: Number(invoice.totalProfit.toFixed(2)),
   };
+console.log("Invoice being saved:");
+console.log(invoiceWithDate);
+const savedInvoice = await createInvoice(invoiceWithDate);
 
-  setInvoices((prev) => [invoiceWithDate, ...prev]);
+if (!savedInvoice) return;
+
+await createInvoiceItems(
+  savedInvoice.id,
+  invoice.items
+);
+
+await loadInvoices();
 
   const user = JSON.parse(
     localStorage.getItem("bizbrain_user")
@@ -77,11 +138,15 @@ totalProfit: Number(invoice.totalProfit.toFixed(2)),
 };
 
   // Delete Invoice
-  const deleteInvoice = (id) => {
-    setInvoices((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
-  };
+  const deleteInvoice = async (id) => {
+
+  const success = await deleteInvoiceById(id);
+
+  if (!success) return;
+
+  await loadInvoices();
+
+};
 
   // Clear All Invoices
   const clearInvoices = () => {

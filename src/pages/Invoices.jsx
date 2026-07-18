@@ -180,7 +180,7 @@ const { businessProfile } = useBusinessProfile();
                       </th>
 
                       <th className="text-left px-4 py-3">
-                        Items
+                        Qty
                       </th>
 
                       <th className="text-left px-4 py-3">

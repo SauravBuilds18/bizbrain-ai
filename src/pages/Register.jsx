@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, User, Building2, Mail, Lock } from "lucide-react";
-
+import { signUp } from "../services/authService";
+import { supabase } from "../lib/supabase";
 export default function Register() {
   const navigate = useNavigate();
 
@@ -13,7 +14,7 @@ export default function Register() {
     confirmPassword: "",
   });
 
-  const handleRegister = (e) => {
+ const handleRegister = async (e) => {
   e.preventDefault();
 
   if (
@@ -32,99 +33,50 @@ export default function Register() {
     return;
   }
 
-  // Save logged-in user
-  const user = {
-    businessName: form.businessName,
-    ownerName: form.ownerName,
-    email: form.email,
-    password: form.password,
-  };
-
-  // Get all registered users
-const users = JSON.parse(
-  localStorage.getItem("bizbrain_users") || "[]"
+  const { data, error } = await signUp(
+  form.email,
+  form.password
 );
 
-// Check if email already exists
-const alreadyExists = users.find(
-  (u) => u.email === form.email
-);
-
-if (alreadyExists) {
-  alert("Email already registered.");
+if (error) {
+  alert(error.message);
   return;
 }
 
-// Add new user
-users.push(user);
+const user = data.user;
 
-// Save all users
-localStorage.setItem(
-  "bizbrain_users",
-  JSON.stringify(users)
-);
+if (user) {
 
-// Save current logged in user
-localStorage.setItem(
-  "bizbrain_user",
-  JSON.stringify(user)
-);
+  // Create user profile
+  await supabase.from("profiles").upsert({
+    id: user.id,
+    full_name: form.ownerName,
+    email: form.email,
+    phone: "",
+  });
 
-  localStorage.setItem(
-    "bizbrain_loggedIn",
-    "true"
-  );
+  // Create business profile
+  await supabase.from("business_profiles").upsert({
+    user_id: user.id,
+    business_name: form.businessName,
+    owner_name: form.ownerName,
+    email: form.email,
+    phone: "",
+    address: "",
+    gst_number: "",
+    website: "",
+    invoice_prefix: "INV",
+    currency: "INR",
+    primary_color: "#2563EB",
+    terms: "",
+    footer: "Thank you for your purchase.",
+  });
 
-  // ---------- Create fresh data for new user ----------
+}
 
-  const inventoryKey = `bizbrain_inventory_${form.email}`;
-  const invoiceKey = `bizbrain_invoices_${form.email}`;
-  const historyKey = `bizbrain_history_${form.email}`;
-  const settingsKey = `bizbrain_settings_${form.email}`;
+alert("Account created successfully!");
 
-  // Only create if this user has no existing data
-  if (!localStorage.getItem(inventoryKey)) {
-    localStorage.setItem(
-      inventoryKey,
-      JSON.stringify([])
-    );
-  }
-
-  if (!localStorage.getItem(invoiceKey)) {
-    localStorage.setItem(
-      invoiceKey,
-      JSON.stringify([])
-    );
-  }
-
-  if (!localStorage.getItem(historyKey)) {
-    localStorage.setItem(
-      historyKey,
-      JSON.stringify([])
-    );
-  }
-
-  if (!localStorage.getItem(settingsKey)) {
-    localStorage.setItem(
-      settingsKey,
-      JSON.stringify({
-        businessName: form.businessName,
-        ownerName: form.ownerName,
-        email: form.email,
-        phone: "",
-        gst: "",
-        address: "",
-        upi: "",
-        footer: "Thank You For Shopping!",
-        currency: "₹",
-        logo: "",
-      })
-    );
-  }
-
-  alert("Account created successfully!");
-
-  navigate("/dashboard");
+navigate("/dashboard");
 };
 
   return (

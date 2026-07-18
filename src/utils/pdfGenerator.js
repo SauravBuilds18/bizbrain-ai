@@ -137,20 +137,8 @@ doc.setTextColor(r,g,b);
   // Summary
   // ===========================
 
-  doc.setTextColor(0);
-
-  doc.setFontSize(12);
-
-  doc.text(
-    `Subtotal : ${businessProfile.currency}${invoice.subtotal.toFixed(2)}`,
-    14,
-    y
-  );
-
-  y += 8;
-
-  doc.text(
-  `Discount (${invoice.discountPercent || 0}%): -${businessProfile.currency}${invoice.discount.toFixed(2)}`,
+ doc.text(
+  `Subtotal : ${businessProfile.currency}${Number(invoice.subtotal || 0).toFixed(2)}`,
   14,
   y
 );
@@ -158,7 +146,7 @@ doc.setTextColor(r,g,b);
 y += 8;
 
 doc.text(
-  `Taxable Amount : ${businessProfile.currency}${invoice.taxableAmount.toFixed(2)}`,
+  `Discount (${invoice.discountPercent || 0}%): -${businessProfile.currency}${Number(invoice.discount || 0).toFixed(2)}`,
   14,
   y
 );
@@ -166,7 +154,7 @@ doc.text(
 y += 8;
 
 doc.text(
-  `CGST (${invoice.cgstPercent || 0}%): ${businessProfile.currency}${invoice.cgst.toFixed(2)}`,
+  `Taxable Amount : ${businessProfile.currency}${Number(invoice.taxableAmount || 0).toFixed(2)}`,
   14,
   y
 );
@@ -174,7 +162,7 @@ doc.text(
 y += 8;
 
 doc.text(
-  `SGST (${invoice.sgstPercent || 0}%): ${businessProfile.currency}${invoice.sgst.toFixed(2)}`,
+  `CGST (${invoice.cgstPercent || 0}%): ${businessProfile.currency}${Number(invoice.cgst || 0).toFixed(2)}`,
   14,
   y
 );
@@ -182,20 +170,27 @@ doc.text(
 y += 8;
 
 doc.text(
-  `Total GST : ${businessProfile.currency}${invoice.gst.toFixed(2)}`,
+  `SGST (${invoice.sgstPercent || 0}%): ${businessProfile.currency}${Number(invoice.sgst || 0).toFixed(2)}`,
   14,
   y
 );
 
 y += 8;
 
-  doc.setTextColor(34, 197, 94);
+doc.text(
+  `Total GST : ${businessProfile.currency}${Number(invoice.gst || 0).toFixed(2)}`,
+  14,
+  y
+);
+// y += 8;
 
-  doc.text(
-    `Profit : ${businessProfile.currency}${invoice.totalProfit.toFixed(2)}`,
-    14,
-    y
-  );
+//   doc.setTextColor(34, 197, 94);
+
+//   doc.text(
+//     `Profit : ${businessProfile.currency}${invoice.totalProfit.toFixed(2)}`,
+//     14,
+//     y
+//   );
 
   y += 15;
 

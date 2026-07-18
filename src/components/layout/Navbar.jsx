@@ -1,25 +1,26 @@
 import { Bell, Search, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
+import { useBusinessProfile } from "../../context/BusinessProfileContext";
 export default function Navbar() {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const user = JSON.parse(
-    localStorage.getItem("bizbrain_user")
-  );
+  const { user } = useAuth();
 
-  const settings = JSON.parse(
-    localStorage.getItem("bizbrain_settings")
-  );
+const { businessProfile } = useBusinessProfile();
 
-  const logout = () => {
-    localStorage.removeItem("bizbrain_loggedIn");
-    navigate("/");
-  };
+  const logout = async () => {
+
+  await supabase.auth.signOut();
+
+  navigate("/login");
+
+};
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function Navbar() {
         handleClickOutside
       );
   }, []);
+
 
   return (
     <header className="h-20 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-8">
@@ -75,10 +77,10 @@ export default function Navbar() {
             className="flex items-center gap-3 hover:bg-slate-800 px-3 py-2 rounded-xl transition"
           >
 
-            {settings?.logo ? (
+            {businessProfile?.logo ? (
 
               <img
-                src={settings.logo}
+                src={businessProfile.logo}
                 alt="Business Logo"
                 className="w-11 h-11 rounded-full object-cover border border-slate-700"
               />
@@ -87,7 +89,9 @@ export default function Navbar() {
 
               <div className="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-lg font-bold">
 
-                {user?.ownerName?.charAt(0).toUpperCase() || "U"}
+                {(businessProfile?.owner_name || user?.email)
+  ?.charAt(0)
+  .toUpperCase().toUpperCase() || "U"}
 
               </div>
 
@@ -97,15 +101,13 @@ export default function Navbar() {
 
               <h3 className="font-semibold">
 
-                {user?.ownerName || "Guest"}
+                {businessProfile?.owner_name || user?.email}
 
               </h3>
 
               <p className="text-xs text-gray-400">
 
-                {settings?.businessName ||
-                  user?.businessName ||
-                  "BizBrain AI"}
+                {businessProfile?.business_name || "Complete Business Profile"}
 
               </p>
 

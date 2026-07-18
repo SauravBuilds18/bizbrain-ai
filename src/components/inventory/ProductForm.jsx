@@ -63,10 +63,7 @@ useEffect(() => {
 
     alert("✅ Product Updated Successfully");
   } else {
-    addProduct({
-      ...finalProduct,
-      id: Date.now(),
-    });
+    addProduct(finalProduct);
 
     alert("✅ Product Added Successfully");
   }

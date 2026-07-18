@@ -185,7 +185,7 @@ const inStock =
 
                   <td className="px-6 py-5 text-center">
 
-                    ₹{item.costPrice}
+                    ₹{item.cost_price}
 
                   </td>
 

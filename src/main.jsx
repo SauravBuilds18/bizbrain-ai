@@ -9,8 +9,12 @@ import { InventoryProvider } from "./context/InventoryContext";
 import { InvoiceProvider } from "./context/InvoiceContext";
 import { BusinessProvider } from "./context/BusinessContext";
 import { DashboardFilterProvider } from "./context/DashboardFilterContext";
+import { AuthProvider } from "./context/AuthContext";
+// import { testConnection } from "./testSupabase";
+// testConnection();
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
+  <AuthProvider>
   <InventoryProvider>
     <InvoiceProvider>
       <DashboardFilterProvider>
@@ -22,5 +26,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       </DashboardFilterProvider>
     </InvoiceProvider>
   </InventoryProvider>
+  </AuthProvider>
 </BrowserRouter>
 );

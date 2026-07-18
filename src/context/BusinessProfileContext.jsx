@@ -1,48 +1,61 @@
 import { createContext, useContext, useState } from "react";
-
+import { useEffect } from "react";
+import { getBusinessProfile } from "../services/businessProfileService";
 const BusinessProfileContext = createContext();
 
 export function BusinessProfileProvider({ children }) {
-  const [businessProfile, setBusinessProfile] = useState({
-    // Business Details
-    companyName: "BizBrain AI",
-    ownerName: "Saurav",
-    businessType: "General Store",
+const [businessProfile, setBusinessProfile] = useState(null);
 
-    // Contact
-    phone: "+91 9876543210",
+useEffect(() => {
+  loadProfile();
+}, []);
+
+async function loadProfile() {
+  const profile = await getBusinessProfile();
+
+  if (!profile) return;
+
+  setBusinessProfile({
+    companyName: profile.business_name || "",
+    ownerName: profile.owner_name || "",
+    businessType: profile.business_type || "",
+
+    phone: profile.phone || "",
     alternatePhone: "",
-    email: "support@bizbrainai.com",
-    website: "www.bizbrainai.com",
+    email: profile.email || "",
+    website: profile.website || "",
 
-    // Address
-    address: "Greater Noida",
-    city: "Greater Noida",
-    state: "Uttar Pradesh",
-    country: "India",
-    pincode: "",
+    address: profile.address || "",
+    city: profile.city || "",
+    state: profile.state || "",
+    country: profile.country || "",
+    pincode: profile.pincode || "",
 
-    // Tax
-    gstNumber: "09ABCDE1234F1Z5",
-    panNumber: "",
+    gstNumber: profile.gst_number || "",
+    panNumber: profile.pan_number || "",
 
-    // Invoice
-    invoicePrefix: "INV",
-    cgst: 9,
-    sgst: 9,
-    currency: "₹",
+    invoicePrefix: profile.invoice_prefix || "INV",
+
+    cgst: profile.cgst || 9,
+    sgst: profile.sgst || 9,
+
+    currency: profile.currency || "INR",
 
     footerMessage:
-      "Thank you for your purchase. We look forward to serving you again!",
+      profile.footer ||
+      "Thank you for your purchase.",
 
-    terms:
-      "Goods once sold will not be returned.",
+    terms: profile.terms || "",
 
-    // Branding
-    logo: "",
-    primaryColor: "#2563eb",
-    invoiceTheme: "professional",
+    logo: profile.logo || "",
+
+    primaryColor:
+      profile.primary_color || "#2563EB",
+
+    invoiceTheme:
+      profile.invoice_theme || "professional",
   });
+}
 
   return (
     <BusinessProfileContext.Provider

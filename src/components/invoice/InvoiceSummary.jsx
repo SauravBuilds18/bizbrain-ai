@@ -3,6 +3,7 @@ import { useBusiness } from "../../context/BusinessContext";
 import { downloadInvoicePDF } from "../../utils/pdfGenerator";
   import { useInvoices } from "../../context/InvoiceContext";
 import { useBusinessProfile } from "../../context/BusinessProfileContext";
+import { useInventory } from "../../context/InventoryContext";
 export default function InvoiceSummary({
   customer,
   setCustomer,
@@ -12,6 +13,7 @@ export default function InvoiceSummary({
 
 
 const { addInvoice } = useInvoices();
+const { sellProduct } = useInventory();
 const { businessProfile } = useBusinessProfile();
 
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -27,13 +29,18 @@ const { businessProfile } = useBusinessProfile();
     0
   );
 
-  const totalProfit = invoiceItems.reduce(
-    (sum, item) =>
-      sum +
-      (item.sellingPrice - item.costPrice) *
-        item.quantity,
-    0
-  );
+const totalProfit = invoiceItems.reduce(
+  (sum, item) =>
+    sum +
+    (
+      (Number(item.sellingPrice || 0) -
+       Number(item.costPrice || 0)) *
+      Number(item.quantity || 0)
+    ),
+  0
+);
+
+
 
   const discount =
     subtotal * (discountPercent / 100);
@@ -56,7 +63,7 @@ const { businessProfile } = useBusinessProfile();
   // Generate Invoice
   // ==========================
 
-  const generateInvoice = () => {
+  const generateInvoice = async () => {
     if (
   customer.name.trim() === "" ||
   customer.phone.trim() === ""
@@ -79,9 +86,12 @@ const { businessProfile } = useBusinessProfile();
 
       subtotal: Number(subtotal.toFixed(2)),
 discount: Number(discount.toFixed(2)),
+discountPercent,
 taxableAmount: Number(taxableAmount.toFixed(2)),
 cgst: Number(cgst.toFixed(2)),
+discountPercent,
 sgst: Number(sgst.toFixed(2)),
+sgstPercent,
 gst: Number(gst.toFixed(2)),
 grandTotal: Number(grandTotal.toFixed(2)),
 totalProfit: Number(totalProfit.toFixed(2)),
@@ -89,11 +99,19 @@ totalProfit: Number(totalProfit.toFixed(2)),
     
     };
 
-    addInvoice(invoice);
+    await addInvoice(invoice);
 
-  downloadInvoicePDF(
-    invoice,
-    businessProfile
+// Reduce inventory
+for (const item of invoice.items) {
+  await sellProduct(
+    item.productId,
+    item.quantity
+  );
+}
+
+downloadInvoicePDF(
+  invoice,
+  businessProfile
 );
 
     alert("Invoice Generated Successfully!");

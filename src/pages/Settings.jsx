@@ -1,4 +1,8 @@
 import { useEffect } from "react";
+import {
+  getBusinessProfile,
+  updateBusinessProfile,
+} from "../services/businessProfileService";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 import { useBusinessProfile } from "../context/BusinessProfileContext";
@@ -10,40 +14,27 @@ export default function Settings() {
     setBusinessProfile,
   } = useBusinessProfile();
 
-  const user = JSON.parse(
-    localStorage.getItem("bizbrain_user")
-  );
+  // const user = JSON.parse(
+  //   localStorage.getItem("bizbrain_user")
+  // );
 
-  const settingsKey = user
-    ? `bizbrain_settings_${user.email}`
-    : "bizbrain_settings_guest";
+  // const settingsKey = user
+  //   ? `bizbrain_settings_${user.email}`
+  //   : "bizbrain_settings_guest";
 
   // Load Business Profile
 
-  useEffect(() => {
-
-    const saved = JSON.parse(
-      localStorage.getItem(settingsKey)
-    );
-
-    if (saved) {
-      setBusinessProfile(saved);
-    }
-
-  }, []);
 
   // Save
 
-  const saveBusinessProfile = () => {
+ const saveBusinessProfile = async () => {
 
-    localStorage.setItem(
-      settingsKey,
-      JSON.stringify(businessProfile)
-    );
+  await updateBusinessProfile(businessProfile);
 
-    alert("✅ Business Profile Updated Successfully!");
+  alert("✅ Business Profile Saved to Cloud!");
 
-  };
+};
+
 
   // Logo Upload
 
@@ -1215,4 +1206,4 @@ export default function Settings() {
 
   );
 
-}    
+}     

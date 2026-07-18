@@ -144,21 +144,21 @@ const averageOrderTrend =
 
 
   // Sales Chart
- const weeklySales = invoices.map((invoice) => ({
-  name: invoice.items?.[0]?.name || "Product",
-  sales: Number(invoice.grandTotal),
-  date: invoice.createdAt,
+ const weeklySales = filteredInvoices.map((invoice) => ({
+  name: invoice.invoiceNo || invoice.invoice_number,
+  sales: Number(invoice.grandTotal || 0),
+  date: invoice.created_at || invoice.date,
 }));
 
   // Top Products
-  const topProducts = filteredInvoices
-    .flatMap((invoice) => invoice.items)
-    .map((item) => ({
-      name: item.name,
-      sales: item.total,
-    }))
-    .sort((a, b) => b.sales - a.sales)
-    .slice(0, 5);
+ const topProducts = filteredInvoices
+  .flatMap((invoice) => invoice.items || [])
+  .map((item) => ({
+    name: item.name || "Unknown Product",
+    sales: Number(item.total || 0),
+  }))
+  .sort((a, b) => b.sales - a.sales)
+  .slice(0, 5);
 
   const [summary, setSummary] = useState(
     "Click Analyze to generate an AI business report."
@@ -177,9 +177,14 @@ const averageOrderTrend =
         "Analyze my business dashboard. Give revenue insights, profit suggestions, low stock alerts, best selling products and business recommendations.",
 
         {
-          products,
-          invoices:filteredInvoices,
-        }
+  products,
+  invoices: filteredInvoices,
+  revenue: totalRevenue,
+  profit: totalProfit,
+  inventoryValue,
+  lowStock,
+  orders,
+}
 
       );
 
@@ -228,7 +233,7 @@ const averageOrderTrend =
   profitChange={profitChange}
   profitTrend={profitTrend}
 
-  products={orders}
+  orders={orders}
   ordersChange={ordersChange}
   ordersTrend={ordersTrend}
 

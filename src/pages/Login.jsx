@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Mail, Lock } from "lucide-react";
+import { signIn } from "../services/authService";
+import { signInWithGoogle } from "../services/authService";
 
 export default function Login() {
 
@@ -8,46 +10,63 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const handleLogin = (e) => {
+const handleLogin = async (e) => {
   e.preventDefault();
 
-  // Get all registered users
-  const users = JSON.parse(
-    localStorage.getItem("bizbrain_users") || "[]"
-  );
+  const { error } = await signIn(email, password);
 
-  if (users.length === 0) {
-    alert("No account found. Please register first.");
+  if (error) {
+    alert(error.message);
     return;
   }
-
-  // Find matching user
-  const foundUser = users.find(
-    (user) =>
-      user.email === email &&
-      user.password === password
-  );
-
-  if (!foundUser) {
-    alert("Invalid email or password.");
-    return;
-  }
-
-  // Save currently logged-in user
-  localStorage.setItem(
-    "bizbrain_user",
-    JSON.stringify(foundUser)
-  );
-
-  // Login
-  localStorage.setItem(
-    "bizbrain_loggedIn",
-    "true"
-  );
 
   navigate("/dashboard");
 };
+const handleGoogleLogin = async () => {
+  const { error } = await signInWithGoogle();
+
+  if (error) {
+    alert(error.message);
+  }
+};
+
+
+  // Get all registered users
+//   const users = JSON.parse(
+//     localStorage.getItem("bizbrain_users") || "[]"
+//   );
+
+//   if (users.length === 0) {
+//     alert("No account found. Please register first.");
+//     return;
+//   }
+
+//   // Find matching user
+//   const foundUser = users.find(
+//     (user) =>
+//       user.email === email &&
+//       user.password === password
+//   );
+
+//   if (!foundUser) {
+//     alert("Invalid email or password.");
+//     return;
+//   }
+
+//   // Save currently logged-in user
+//   localStorage.setItem(
+//     "bizbrain_user",
+//     JSON.stringify(foundUser)
+//   );
+
+//   // Login
+//   localStorage.setItem(
+//     "bizbrain_loggedIn",
+//     "true"
+//   );
+
+//   navigate("/dashboard");
+// };
 
   return (
 
@@ -167,7 +186,19 @@ export default function Login() {
             Login
 
           </button>
+<div className="my-6 flex items-center">
+  <div className="flex-1 h-px bg-slate-700"></div>
+  <span className="px-4 text-slate-400 text-sm">OR</span>
+  <div className="flex-1 h-px bg-slate-700"></div>
+</div>
 
+<button
+  type="button"
+  onClick={handleGoogleLogin}
+  className="w-full border border-slate-700 rounded-xl py-4 hover:bg-slate-800 font-semibold"
+>
+  Continue with Google
+</button>
           <p className="text-center mt-8 text-slate-400">
 
             Don't have an account?
@@ -190,5 +221,4 @@ export default function Login() {
     </div>
 
   );
-
 }

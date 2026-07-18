@@ -18,7 +18,7 @@ export async function signInWithGoogle() {
   return await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: "http://localhost:5173/dashboard",
+      redirectTo: "https://bizbrain-ai-kappa.vercel.app/dashboard",
       queryParams: {
         prompt: "select_account",
       },
